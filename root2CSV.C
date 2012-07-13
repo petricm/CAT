@@ -10,7 +10,7 @@
  *               arg3 = filename for output CSV file
  *               arg4 = comma seperated list of variables that shall be written into the CSV file
  *
- * usage:       root root2CSV'("file.root","tree","file.csv","var1,var2,var3,var4")'
+ * usage:       root root2CSV.C'("file.root","tree","file.csv","var1,var2,var3,var4")'
  */
 
 #include <iostream>
