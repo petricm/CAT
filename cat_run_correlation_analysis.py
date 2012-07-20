@@ -4,7 +4,7 @@
 author:       Michael Prim
 contact:      michael.prim@kit.edu
 date:         2012-05-31
-version:      1.0
+version:      1.1
 description:  CAT - A correlation analysis tool
 
 ---
@@ -51,6 +51,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import scipy.stats as stats
 import scipy.version as spversion
 import matplotlib as mpl
+import uuid
 
 
 class histogram:
@@ -1127,21 +1128,25 @@ def main():
         for d in data:
             print str(d[0:3]) + ' ... ' + str(d[-3:])
 
+    workingdir = "./CAT_tmpdir_" + str(uuid.uuid4()) + "/"
+    print "Working directory is " + workingdir
+    os.system("mkdir -p " + workingdir)
+
     # Determine in how many bins of y each variable x should be plotted
     nbins = get_nbins_for_plot_matrix(data, options.verbose)
 
     # Create title page
     if(options.epspage):
-        create_title_page(header, options.inputfile, "ca_page_title.eps", options.verbose)
+        create_title_page(header, options.inputfile, workingdir + "ca_page_title.eps", options.verbose)
     else:
         create_title_page(header, options.inputfile, options.outfile, options.verbose)
 
     # Create collreation matrix of input variables
     if(options.epspage):
-        create_correlation_matrix_page(data, header, "Pearson", "ca_page_1_correlation_matrix.eps", options.verbose)
-        create_correlation_matrix_page(data, header, "Spearman", "ca_page_2_correlation_matrix.eps", options.verbose)
+        create_correlation_matrix_page(data, header, "Pearson", workingdir + "ca_page_1_correlation_matrix.eps", options.verbose)
+        create_correlation_matrix_page(data, header, "Spearman", workingdir + "ca_page_2_correlation_matrix.eps", options.verbose)
         if(options.patient):
-            create_correlation_matrix_page(data, header, "Kendall's tau", "ca_page_3_correlation_matrix.eps", options.verbose)
+            create_correlation_matrix_page(data, header, "Kendall's tau", workingdir + "ca_page_3_correlation_matrix.eps", options.verbose)
     else:
         create_correlation_matrix_page(data, header, "Pearson", options.outfile, options.verbose)
         create_correlation_matrix_page(data, header, "Spearman", options.outfile, options.verbose)
@@ -1159,7 +1164,7 @@ def main():
                 continue
             else:
                 if(options.epspage):
-                    significance_buffer = create_flat_correlation_matix_page(data, header, variable_x, variable_y, "ca_page_flat_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps", options.verbose)
+                    significance_buffer = create_flat_correlation_matix_page(data, header, variable_x, variable_y, workingdir + "ca_page_flat_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps", options.verbose)
                 else:
                     significance_buffer = create_flat_correlation_matix_page(data, header, variable_x, variable_y, options.outfile, options.verbose)
                 if(math.isinf(significance_buffer)):
@@ -1170,11 +1175,11 @@ def main():
         print significance_matrix
         
     # create the significance matrix page
-    create_significance_matrix_page(significance_matrix, header, "ca_page_significance_matrix.eps", options.verbose)
+    create_significance_matrix_page(significance_matrix, header, workingdir + "ca_page_significance_matrix.eps", options.verbose)
 
     # Create profile plot matrix of input variables
     if(options.epspage):
-        create_profile_matrix_page(data, header, "ca_page_profile_matrix.eps", options.verbose)
+        create_profile_matrix_page(data, header, workingdir + "ca_page_profile_matrix.eps", options.verbose)
     else:
         create_profile_matrix_page(data, header, options.outfile, options.verbose)
 
@@ -1188,7 +1193,7 @@ def main():
                 continue
             else:
                 if(options.epspage):
-                    create_correlation_analysis_page(data, nbins, header, variable_x, variable_y, "ca_page_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps", options.verbose)
+                    create_correlation_analysis_page(data, nbins, header, variable_x, variable_y, workingdir + "ca_page_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps", options.verbose)
                 else:
                     create_correlation_analysis_page(data, nbins, header, variable_x, variable_y, options.outfile, options.verbose)
 
@@ -1197,11 +1202,11 @@ def main():
         if(options.verbose):
             print "Start with eps to pdf conversion and create final file"
         try:
-            os.system("epstopdf ca_page_title.eps")
+            os.system("epstopdf " + workingdir + "ca_page_title.eps")
             for i in xrange(1, 4):
                 if(i == 3 and options.patient == False):
                     continue
-                os.system("epstopdf ca_page_" + str(i) + "_correlation_matrix.eps")
+                os.system("epstopdf " + workingdir + "ca_page_" + str(i) + "_correlation_matrix.eps")
             for variable_x in xrange(0, len(header)):
                 if(options.fixed != None):
                     if(header_raw[variable_x] != options.fixed):
@@ -1210,9 +1215,9 @@ def main():
                     if(variable_x == variable_y):
                         continue
                     else:
-                        os.system("epstopdf ca_page_flat_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps")
-            os.system("epstopdf ca_page_profile_matrix.eps")
-            os.system("epstopdf ca_page_significance_matrix.eps")
+                        os.system("epstopdf " + workingdir + "ca_page_flat_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps")
+            os.system("epstopdf " + workingdir + "ca_page_profile_matrix.eps")
+            os.system("epstopdf " + workingdir + "ca_page_significance_matrix.eps")
             for variable_x in xrange(0, len(header)):
                 if(options.fixed != None):
                     if(header_raw[variable_x] != options.fixed):
@@ -1221,11 +1226,12 @@ def main():
                     if(variable_x == variable_y):
                         continue
                     else:
-                        os.system("epstopdf ca_page_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps")
-            os.system("pdfjoin --outfile " + options.outfile + " ca_page_title.pdf ca_page_*_correlation_matrix.pdf ca_page_profile_matrix.pdf ca_page_significance_matrix.pdf ca_page_flat_var_*.pdf ca_page_var_*.pdf")
-            os.system("rm ca_page_*.pdf")
+                        os.system("epstopdf " + workingdir + "ca_page_var_" + header_raw[variable_x] + "_vs_" + header_raw[variable_y] + ".eps")
+            os.system("pdfjoin --outfile " + options.outfile + " " + workingdir + "ca_page_title.pdf " + workingdir + "ca_page_*_correlation_matrix.pdf " + workingdir + "ca_page_profile_matrix.pdf " + workingdir + "ca_page_significance_matrix.pdf " + workingdir + "ca_page_flat_var_*.pdf " + workingdir + "ca_page_var_*.pdf")
+            os.system("rm " + workingdir + "ca_page_*.pdf")
             if(options.cleanup):
-                os.system("rm ca_page_*.eps")
+                os.system("rm " + workingdir + "ca_page_*.eps")
+                os.system("rm -rf " + workingdir)
         except:
             print "Some error occured during the final joining of all the individual pages to a single correlation analysis file."
             print "Please make sure that epstopdf as well as pdfjoin are installed on your system!"
