@@ -887,7 +887,7 @@ def create_flat_correlation_matix_page(data, header, variable_x, variable_y, out
     # in each bin of x(y) 1/nbins part of the statistic is stored
     # last bin is determined by all other bins in x(y)
     # subtract over all amount of entries
-    prob = stats.chisqprob(chi2, nbins * nbins - ((nbins - 1) + (nbins - 1) + 1))
+    prob = stats.distributions.chi2.sf(chi2, nbins * nbins - ((nbins - 1) + (nbins - 1) + 1))
 
     if(verbose):
         print "Probability for data " + header[variable_x] + " vs. " + header[variable_y] + " being consistent with flat hypothesis is %.6f" % (prob * 100)
