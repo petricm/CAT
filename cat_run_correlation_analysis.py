@@ -74,7 +74,7 @@ class histogram:
         self.__bin_centers = bins
         self.__bin_contents = values
         self.__bin_errors = errors
-        if(errors == None):
+        if(errors is None):
             #self.__calc_poisson_errors()
             self.__calc_poisson_conf_interval()
         elif(len(errors) * len(errors[-1]) != 2 * len(bins)):
